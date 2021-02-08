@@ -3,7 +3,10 @@
 # imports of external packages to use in our code
 import sys
 import numpy as np
+import matplitlib as mpl
 import matplotlib.pyplot as plt
+import argparse
+import my_params
 
 #################
 # Random class
@@ -43,50 +46,57 @@ class Random:
     def rand(self):
         return 5.42101086242752217E-20 * self.int64()
 
+def make_plot(data):
+    #imort custom matplotlib parameters from file
+    custom_params = my_params.params()
+    mpl.rcParams.update(custom_params)
+    
+    fig, ax = plt.subplots()
+    n, bins, patches = ax.hist(myx, 50, density=True, facecolor='g', alpha=0.75)
+    ax.set_xlabel('x')
+    ax.set_ylabel('Probability')
+    ax.set_title('Uniform Random Number')
+
+    
 # main function for this Python code
 if __name__ == "__main__":
-    # if the user includes the flag -h or --help print the options
-    if '-h' in sys.argv or '--help' in sys.argv:
-        print ("Usage: %s [-seed number]" % sys.argv[0])
-        print
-        sys.exit(1)
+    
+    # Set up parser to handle command line arguments
+    # Run as 'python PHSX815_HW2_KurtH.py -h' to see all available commands
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--Read_From", "-r", help="File to read numbers from")
+    parser.add_argument("--seed", "-s", help="Seed number to use")
+    args = parser.parse_args()
 
     # default seed
     seed = 5555
+    if args.seed:
+        print("Set seed to %s" % args.seed)
+        seed = args.seed
 
-    # read the user-provided seed from the command line (if there)
-    if '-seed' in sys.argv:
-        p = sys.argv.index('-seed')
-        seed = sys.argv[p+1]
-
-    # set random seed for numpy
-    np.random.seed(seed)
-
-    # class instance of our Random class using seed
-    random = Random(seed)
-
-    # create some random data
-    N = 10000
-
-    # an array of random numbers from numpy
-    x = np.random.rand(N)
-
-    # an array of random numbers using our Random class
-    myx = np.array([])
-    for i in range(0,N):
-        myx = np.append( myx, random.rand())
-
-    # Save array of random numbers to a file
-    np.savetxt('random_numbers.txt', myx, delimiter = ',')
+    if args.Read_From:
+        print("Reading numbers from file %s" % args.Read_From)
+        readFile = args.Read_From
+        myx = np.loadtxt(readFile)
+        make_plot(myx)
     
-    # create histogram of our data
-    n, bins, patches = plt.hist(myx, 50, density=True, facecolor='g', alpha=0.75)
+    else:
+        # set random seed for numpy
+        np.random.seed(seed)
 
-    # plot formating options
-    plt.xlabel('x')
-    plt.ylabel('Probability')
-    plt.title('Uniform random number')
-    plt.grid(True)
+        # class instance of our Random class using seed
+        random = Random(seed)
 
-    # show figure (program only ends once closed
+        # create some random data
+        N = 10000
+
+        # an array of random numbers from numpy
+        x = np.random.rand(N)
+
+        # an array of random numbers using our Random class
+        myx = np.array([])
+        for i in range(0,N):
+            myx = np.append( myx, random.rand())
+        make_plot(myx)
+    
     plt.show()
